@@ -6,7 +6,7 @@ from typing import Optional, List
 
 app=FastAPI()
 client = OpenAI()
-# client.api_key = os.getenv("OPENAI_API_KEY")    
+client.api_key = os.getenv("OPENAI_API_KEY")    
 
 class chat_prompt(BaseModel):
     user_prompt:str
@@ -36,7 +36,7 @@ async def chat_endpoint(payload:chat_prompt):
 
     try:
         completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         messages=chat_history
     )        
         response=completion.choices[0].message.content
