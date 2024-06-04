@@ -3,10 +3,24 @@ import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional, List
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 app=FastAPI()
 client = OpenAI()
-client.api_key = os.getenv("OPENAI_API_KEY")    
+origins = [
+    "http://localhost:5500",
+    "http://localhost:8080",
+    "http://127.0.0.1:5500"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) 
+# client.api_key = os.getenv("OPENAI_API_KEY")    
 
 class chat_prompt(BaseModel):
     user_prompt:str
@@ -30,23 +44,35 @@ chat_history = [
             # {"role": "system", "content": ""},          
         ]
 
+async def chat_stream(chat_history):
+    #  try:
+        completion=client.chat.completions.create(
+            model="gpt-4",
+            messages=chat_history,
+            stream=True
+            )     
+        for chunk in completion:       
+            if chunk.choices[0].delta.content is not None:
+                response=chunk.choices[0].delta.content
+                chat_history.append({"role":"assistant","content":response})
+                yield f"data: {chunk.choices[0].delta.content}\n\n"
+                print(response) 
+            
+ 
+
+    
+    #  except Exception as e:            
+    #    return "error"
+    
+
 @app.post("/chat")
 async def chat_endpoint(payload:chat_prompt):
     chat_history.append({"role": "user", "content": payload.user_prompt})
-
-    try:
-        completion = client.chat.completions.create(
-        model="gpt-4",
-        messages=chat_history
-    )        
-        response=completion.choices[0].message.content
-        chat_history.append({"role":"assistant","content":response})
-        print(chat_history) 
-        return response
+    return StreamingResponse(chat_stream(chat_history), media_type="text/event-stream")
     
-    except Exception as e:
-            
-       return "Something went wrong! :( "
+    
+
+   
         
             
 @app.post("/create")     
