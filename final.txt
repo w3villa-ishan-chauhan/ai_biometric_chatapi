@@ -1,0 +1,35 @@
+from openai import OpenAI
+import json
+import os
+client = OpenAI()
+# client.api_key = os.getenv("OPENAI_API_KEY")
+chat_history = [
+            {"role": "system", "content": "only respond to maths problem, else refuse"},
+            # {"role": "user", "content": user_prompt}
+        ]
+def chat(user_prompt):
+    chat_history.append({"role": "user", "content": user_prompt})
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=chat_history
+    )
+    return response
+
+messages=[]
+while True:
+    print("Enter text..")
+    user_prompt=input()
+    completion = chat(user_prompt)
+    response=completion.choices[0].message.content
+    print(response)
+    # chat_history.append(
+    #     {
+    #         "role":"user","content":system_prompt
+    #     }
+    # )
+    chat_history.append({"role":"assistant","content":response})
+    # output={
+    #     "completion":response,
+    #     "role":"assistant"
+    # }
+    # print(json.dumps(output,indent=1))
