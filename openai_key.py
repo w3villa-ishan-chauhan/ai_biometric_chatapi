@@ -6,7 +6,7 @@ from typing import Optional, List
 
 app=FastAPI()
 client = OpenAI()
-client.api_key = os.getenv("OPENAI_API_KEY")    
+# client.api_key = os.getenv("OPENAI_API_KEY")    
 
 class chat_prompt(BaseModel):
     user_prompt:str
