@@ -1,8 +1,0 @@
-{
-  "payload": {
-    "department": [
-      { "name": "abc", "age": 12 },
-      { "name": "xyz", "age": 10 }
-    ]
-  }
-}

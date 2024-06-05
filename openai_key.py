@@ -6,6 +6,10 @@ from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
+# from dotenv import load_dotenv
+# load_dotenv()
+# os.getenv("OPENAI_API_KEY")   
+
 app=FastAPI()
 client = OpenAI()
 origins = [
@@ -58,7 +62,6 @@ async def chat_stream(chat_history):
                 yield f"data: {chunk.choices[0].delta.content}\n\n"
                 print(response) 
             
- 
 
     
     #  except Exception as e:            
