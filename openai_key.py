@@ -10,7 +10,10 @@ from dotenv import load_dotenv
 load_dotenv()
 os.getenv("OPENAI_API_KEY")   
 
-
+persona={
+    "1":"You are a funny assistant, you will respond to queries based on test report.",
+    "2":"You are a friendly assistant. Use casual language and be approachable in your responses."
+}
 app=FastAPI()
 client = OpenAI()
 origins = [
@@ -25,7 +28,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 ) 
-# client.api_key = os.getenv("OPENAI_API_KEY")    
+# client.api_key = os.getenv("OPENAI_API_KEY")   
+class main_prompt(BaseModel):
+    persona_id:str
 
 class chat_prompt(BaseModel):
     user_prompt:str
@@ -43,6 +48,7 @@ class bloodapi_readings(BaseModel):
 
 class bloodapi(BaseModel):
    results:List[bloodapi_readings]   
+   persona_id:str
    
 chat_history =[]
 
@@ -62,17 +68,25 @@ async def chat_stream(chat_history):
             
 
 @app.post("/chat")
-async def chat_endpoint(payload:chat_prompt):
+async def chat_endpoint(payload:chat_prompt,):
     chat_history.append({"role": "user", "content": payload.user_prompt})
     return StreamingResponse(chat_stream(chat_history), media_type="text/event-stream")  
         
             
 @app.post("/create")     
-async def prompt_template(payload:bloodapi): 
-    chat_history.clear()
-    prompt_template={"role":"system","content":f'You are a test report bot,you will be responding to provided data:{payload.results},only respond to queries based on data as per your role, else refuse'}  
-    chat_history.append(prompt_template)  
-    print(chat_history) 
+async def prompt_template(payload:bloodapi):
+    
+    
+    if (int(payload.persona_id)>len(persona) or int(payload.persona_id)<0):
+        return "invalid persona!"
+    else:
+        selected_persona_template=persona[payload.persona_id]
+        chat_history.clear()
+        prompt_template={"role":"system","content":f'{selected_persona_template},only respond to queries as per your role, else refuse, provided data:{payload.results}'}  
+        chat_history.append(prompt_template)  
+        print(chat_history) 
     return "persona created"
+
+    
           
     
