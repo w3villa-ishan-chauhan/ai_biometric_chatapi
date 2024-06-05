@@ -6,9 +6,10 @@ from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-# from dotenv import load_dotenv
-# load_dotenv()
-# os.getenv("OPENAI_API_KEY")   
+from dotenv import load_dotenv
+load_dotenv()
+os.getenv("OPENAI_API_KEY")   
+
 
 app=FastAPI()
 client = OpenAI()
@@ -41,15 +42,12 @@ class bloodapi_readings(BaseModel):
    rejection_reason: Optional[str] = None    
 
 class bloodapi(BaseModel):
-   results:List[bloodapi_readings]
+   results:List[bloodapi_readings]   
    
-   
-chat_history = [
-            # {"role": "system", "content": ""},          
-        ]
+chat_history =[]
 
 async def chat_stream(chat_history):
-    #  try:
+    
         completion=client.chat.completions.create(
             model="gpt-4",
             messages=chat_history,
@@ -63,19 +61,10 @@ async def chat_stream(chat_history):
                 print(response) 
             
 
-    
-    #  except Exception as e:            
-    #    return "error"
-    
-
 @app.post("/chat")
 async def chat_endpoint(payload:chat_prompt):
     chat_history.append({"role": "user", "content": payload.user_prompt})
-    return StreamingResponse(chat_stream(chat_history), media_type="text/event-stream")
-    
-    
-
-   
+    return StreamingResponse(chat_stream(chat_history), media_type="text/event-stream")  
         
             
 @app.post("/create")     
