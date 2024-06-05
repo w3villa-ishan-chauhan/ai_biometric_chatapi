@@ -1,5 +1,4 @@
 fastapi
 openai
-dotenv
 pydantic
 typing
